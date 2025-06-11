@@ -1006,4 +1006,8 @@ const (
 	// FlagTeamFolders
 	// Enables team folders functionality
 	FlagTeamFolders = "teamFolders"
+
+	// FlagDashboardDropAndPaste
+	// Enables the drop and paste handlers on dashboards
+	FlagDashboardDropAndPaste = "dashboardDropAndPaste"
 )
