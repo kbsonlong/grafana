@@ -1955,6 +1955,13 @@ var (
 			Owner:        grafanaPartnerPluginsSquad,
 			Expression:   "false",
 		},
+		{
+			Name:         "dskitBackgroundServices",
+			Description:  "Enables dskit background service wrapper",
+			Stage:        FeatureStageExperimental,
+			FrontendOnly: false,
+			Owner:        grafanaPluginsPlatformSquad,
+		},
 	}
 )
 
