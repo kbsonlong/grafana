@@ -10,7 +10,7 @@ import {
   reduceField,
 } from '@grafana/data';
 
-import { TableColumnResizeActionCallback } from '../types';
+import { TableColumnResizeActionCallback } from '../Table/types';
 
 import { TABLE } from './constants';
 import { FilterType, TableFooterCalc, TableRow, TableSortByFieldState, TableSummaryRow, TypographyCtx } from './types';
