@@ -1,12 +1,9 @@
-import 'react-data-grid/lib/styles.css';
-
 import { clsx } from 'clsx';
 import memoize from 'micro-memoize';
 import { CSSProperties, Key, ReactNode, useCallback, useMemo, useRef, useState } from 'react';
 import {
   Cell,
   CellRendererProps,
-  DataGrid,
   DataGridHandle,
   DataGridProps,
   RenderCellProps,
@@ -30,7 +27,7 @@ import { FieldColorModeId, TableCellTooltipPlacement } from '@grafana/schema';
 
 import { useStyles2, useTheme2 } from '../../themes/ThemeContext';
 import { getTextColorForBackground as _getTextColorForBackground } from '../../utils/colors';
-import { Pagination } from '../Pagination/Pagination';
+import { DataGrid } from '../DataGrid/DataGrid';
 import { PanelContext, usePanelContext } from '../PanelChrome';
 import { DataLinksActionsTooltip } from '../Table/DataLinksActionsTooltip';
 import { TableCellInspector, TableCellInspectorMode } from '../Table/TableCellInspector';
@@ -124,7 +121,7 @@ export function TableNG(props: TableNGProps) {
   } = props;
 
   const theme = useTheme2();
-  const styles = useStyles2(getGridStyles, enablePagination, transparent);
+  const styles = useStyles2(getGridStyles);
   const panelContext = usePanelContext();
 
   const getCellActions = useCallback(
@@ -338,9 +335,10 @@ export function TableNG(props: TableNGProps) {
         return (
           <DataGrid<TableRow, TableSummaryRow>
             {...commonDataGridProps}
-            className={clsx(styles.grid, styles.gridNested)}
-            headerRowClass={clsx(styles.headerRow, { [styles.displayNone]: !hasNestedHeaders })}
+            transparent={transparent}
+            className={styles.gridNested}
             headerRowHeight={hasNestedHeaders ? TABLE.HEADER_HEIGHT : 0}
+            hideHeader={!hasNestedHeaders}
             columns={nestedColumns}
             rows={expandedRecords}
             renderers={renderers}
@@ -350,7 +348,7 @@ export function TableNG(props: TableNGProps) {
       width: COLUMN.EXPANDER_WIDTH,
       minWidth: COLUMN.EXPANDER_WIDTH,
     }),
-    [commonDataGridProps, data.fields.length, expandedRows, sortColumns, styles]
+    [commonDataGridProps, data.fields.length, expandedRows, transparent, sortColumns, styles]
   );
 
   const fromFields = useCallback(
@@ -707,20 +705,30 @@ export function TableNG(props: TableNGProps) {
     [cellRootRenderers]
   );
 
-  // we need to have variables with these exact names for the localization to work properly
-  const itemsRangeStart = pageRangeStart;
-  const displayedEnd = pageRangeEnd;
-  const numRows = sortedRows.length;
-
   return (
     <>
       <DataGrid<TableRow, TableSummaryRow>
         {...commonDataGridProps}
+        transparent={transparent}
+        pagination={
+          enablePagination
+            ? {
+                numPages,
+                numRows: sortedRows.length,
+                pageRowStart: pageRangeStart,
+                pageRowEnd: pageRangeEnd,
+                initialPage: page + 1,
+                small: smallPagination,
+                onPageChange: (pageNumber) => {
+                  setPage(pageNumber - 1);
+                },
+              }
+            : undefined
+        }
         ref={gridRef}
-        className={styles.grid}
         columns={structureRevColumns}
         rows={paginatedRows}
-        headerRowClass={clsx(styles.headerRow, { [styles.displayNone]: noHeader })}
+        hideHeader={noHeader}
         headerRowHeight={headerHeight}
         onCellClick={({ column, row }, { clientX, clientY, preventGridDefault, target }) => {
           // Note: could be column.field; JS says yes, but TS says no!
@@ -758,29 +766,6 @@ export function TableNG(props: TableNGProps) {
         }
         renderers={{ renderRow, renderCell: renderCellRoot }}
       />
-
-      {enablePagination && (
-        <div className={styles.paginationContainer}>
-          <Pagination
-            className="table-ng-pagination"
-            currentPage={page + 1}
-            numberOfPages={numPages}
-            showSmallVersion={smallPagination}
-            onNavigate={(toPage) => {
-              setPage(toPage - 1);
-            }}
-          />
-          {!smallPagination && (
-            <div className={styles.paginationSummary}>
-              {/* TODO: once TableRT is deprecated, we can update the localiziation
-                    string with the more consistent variable names */}
-              <Trans i18nKey="grafana-ui.table.pagination-summary">
-                {{ itemsRangeStart }} - {{ displayedEnd }} of {{ numRows }} rows
-              </Trans>
-            </div>
-          )}
-        </div>
-      )}
 
       {tooltipState && (
         <DataLinksActionsTooltip
