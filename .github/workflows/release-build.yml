@@ -141,7 +141,7 @@ jobs:
         # This could be a future improvement.
         include:
           - name: linux-amd64 # publish-npm relies on this step building npm packages
-            artifacts: targz:grafana:linux/amd64,deb:grafana:linux/amd64,rpm:grafana:linux/amd64,docker:grafana:linux/amd64,docker:grafana:linux/amd64:ubuntu,npm:grafana,storybook
+            artifacts: npm:grafana,storybook
             verify: true
           # - name: linux-arm64
           #   artifacts: targz:grafana:linux/arm64,deb:grafana:linux/arm64,rpm:grafana:linux/arm64,docker:grafana:linux/arm64,docker:grafana:linux/arm64:ubuntu
@@ -283,10 +283,10 @@ jobs:
     env:
       PACKAGES_VERSION: ${{ needs.setup.outputs.version }}
     steps:
-      # - name: Checkout code
-      #   uses: actions/checkout@v4
-      #   with:
-      #     persist-credentials: false
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       # - name: Setup Node.js
       #   uses: ./.github/actions/setup-node
@@ -301,6 +301,7 @@ jobs:
       #   with:
       #     name: artifacts-list-linux-amd64
       #     path: .
+
       - run: echo "publishing as version ${PACKAGES_VERSION}"
 
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
@@ -308,7 +309,14 @@ jobs:
           name: artifacts-linux-amd64
           path: dist
 
-      - run: ls -lah dist
+      - run: mv dist/"${PACKAGES_VERSION}"/npm-artifacts npm-artifacts
+
+      - run: ls -lah npm-artifacts
+
+      - name: Publish
+        env:
+          NPM_TOKEN: "oidc"
+        run: ./scripts/publish-npm-packages.sh --dist-tag 'canary' --registry 'https://registry.npmjs.org/'
 
       # - name: Publish
       #   env:
