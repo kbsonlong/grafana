@@ -270,6 +270,7 @@ export interface FeatureToggles {
   kubernetesLibraryPanels?: boolean;
   /**
   * Use the kubernetes API in the frontend for dashboards
+  * @default true
   */
   kubernetesDashboards?: boolean;
   /**
@@ -300,10 +301,6 @@ export interface FeatureToggles {
   * Register /apis/query.grafana.app/ -- will eventually replace /api/ds/query
   */
   queryService?: boolean;
-  /**
-  * Adds datasource connections to the query service
-  */
-  queryServiceWithConnections?: boolean;
   /**
   * Rewrite requests targeting /ds/query to the query service
   */
@@ -433,6 +430,10 @@ export interface FeatureToggles {
   * Enable the secrets management API and services under app platform
   */
   secretsManagementAppPlatform?: boolean;
+  /**
+  * Enable the secrets management app platform UI
+  */
+  secretsManagementAppPlatformUI?: boolean;
   /**
   * Writes the state periodically to the database, asynchronous to rule evaluation
   */
@@ -911,10 +912,6 @@ export interface FeatureToggles {
   */
   unifiedStorageGrpcConnectionPool?: boolean;
   /**
-  * Enables the extension sidebar
-  */
-  extensionSidebar?: boolean;
-  /**
   * Enables UI functionality to permanently delete alert rules
   * @default true
   */
@@ -1072,6 +1069,7 @@ export interface FeatureToggles {
   unifiedStorageSearchDualReaderEnabled?: boolean;
   /**
   * Enables adhoc filtering support for the dashboard datasource
+  * @default true
   */
   dashboardDsAdHocFiltering?: boolean;
   /**
@@ -1080,11 +1078,16 @@ export interface FeatureToggles {
   dashboardLevelTimeMacros?: boolean;
   /**
   * Starts Grafana in remote secondary mode pulling the latest state from the remote Alertmanager to avoid duplicate notifications.
-  * @default false
   */
   alertmanagerRemoteSecondaryWithRemoteState?: boolean;
   /**
+  * Enables sharing a list of APIs with a list of plugins
+  * @default false
+  */
+  restrictedPluginApis?: boolean;
+  /**
   * Enable adhoc filter buttons in visualization tooltips
+  * @default true
   */
   adhocFiltersInTooltips?: boolean;
   /**
@@ -1114,4 +1117,18 @@ export interface FeatureToggles {
   * Checks for deprecated Prometheus authentication methods (SigV4 and Azure), installs the relevant data source, and migrates the Prometheus data sources
   */
   prometheusTypeMigration?: boolean;
+  /* Enables the alerting triage feature
+  * @default false
+  */
+  alertingTriage?: boolean;
+  /**
+  * Enables the Graphite data source full backend mode
+  * @default false
+  */
+  graphiteBackendMode?: boolean;
+  /**
+  * Enables the updated Azure Monitor resource picker
+  * @default false
+  */
+  azureResourcePickerUpdates?: boolean;
 }

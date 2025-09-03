@@ -86,11 +86,6 @@ module.exports = [
         {
           patterns: [
             {
-              group: ['@grafana/ui*', '*/Layout/*'],
-              importNames: ['Layout', 'HorizontalGroup', 'VerticalGroup'],
-              message: 'Use Stack component instead.',
-            },
-            {
               group: ['@grafana/ui/src/*', '@grafana/runtime/src/*', '@grafana/data/src/*'],
               message: 'Import from the public export instead.',
             },
@@ -149,6 +144,17 @@ module.exports = [
           selector: 'CallExpression[callee.type="MemberExpression"][callee.property.name="localeCompare"]',
           message:
             'Using localeCompare() can cause performance issues when sorting large datasets. Consider using Intl.Collator for better performance when sorting arrays, or add an eslint-disable comment if sorting a small, known dataset.',
+        },
+        {
+          // eslint-disable-next-line no-restricted-syntax
+          selector: 'Literal[value=/gf-form/], TemplateElement[value.cooked=/gf-form/]',
+          // eslint-disable-next-line no-restricted-syntax
+          message: 'gf-form usage has been deprecated. Use a component from @grafana/ui or custom CSS instead.',
+        },
+        {
+          selector:
+            "Property[key.name='a11y'][value.type='ObjectExpression'] Property[key.name='test'][value.value='off']",
+          message: 'Skipping a11y tests is not allowed. Please fix the component or story instead.',
         },
       ],
     },
