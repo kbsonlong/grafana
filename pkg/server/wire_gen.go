@@ -813,7 +813,7 @@ func Initialize(ctx context.Context, cfg *setting.Cfg, opts Options, apiOpts api
 		return nil, err
 	}
 	userStorageAPIBuilder := userstorage.RegisterAPIService(featureToggles, apiserverService, registerer)
-	apiBuilder := preferences.RegisterAPIService(cfg, featureToggles, sqlStore, prefService, apiserverService)
+	apiBuilder := preferences.RegisterAPIService(cfg, featureToggles, sqlStore, prefService, starService, userService, apiserverService)
 	legacyMigrator := legacy.ProvideLegacyMigrator(sqlStore, provisioningServiceImpl, libraryPanelService, dashboardPermissionsService, accessControl, featureToggles)
 	webhookExtraBuilder := webhooks.ProvideWebhooks(cfg, renderingService, resourceClient, eventualRestConfigProvider)
 	v3 := extras.ProvideProvisioningOSSExtras(webhookExtraBuilder)
@@ -1401,7 +1401,7 @@ func InitializeForTest(ctx context.Context, t sqlutil.ITestDB, testingT interfac
 		return nil, err
 	}
 	userStorageAPIBuilder := userstorage.RegisterAPIService(featureToggles, apiserverService, registerer)
-	apiBuilder := preferences.RegisterAPIService(cfg, featureToggles, sqlStore, prefService, apiserverService)
+	apiBuilder := preferences.RegisterAPIService(cfg, featureToggles, sqlStore, prefService, starService, userService, apiserverService)
 	legacyMigrator := legacy.ProvideLegacyMigrator(sqlStore, provisioningServiceImpl, libraryPanelService, dashboardPermissionsService, accessControl, featureToggles)
 	webhookExtraBuilder := webhooks.ProvideWebhooks(cfg, renderingService, resourceClient, eventualRestConfigProvider)
 	v3 := extras.ProvideProvisioningOSSExtras(webhookExtraBuilder)
