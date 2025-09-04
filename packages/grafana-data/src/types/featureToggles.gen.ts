@@ -1119,9 +1119,11 @@ export interface FeatureToggles {
   teamFolders?: boolean;
   /**
   * Checks for deprecated Prometheus authentication methods (SigV4 and Azure), installs the relevant data source, and migrates the Prometheus data sources
+  * @default false
   */
   prometheusTypeMigration?: boolean;
-  /* Enables the alerting triage feature
+  /**
+  * Enables the alerting triage feature
   * @default false
   */
   alertingTriage?: boolean;
