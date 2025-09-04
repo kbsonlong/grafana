@@ -1,15 +1,20 @@
 package adapter
 
-import "github.com/grafana/grafana/pkg/modules"
+import (
+	"github.com/grafana/grafana/pkg/infra/tracing"
+	"github.com/grafana/grafana/pkg/modules"
+)
 
 const (
+	// Tracing is the module name for the tracing service.
+	Tracing = tracing.ServiceName
+	// GrafanaAPIServer is the module name for the Grafana API server.
+	GrafanaAPIServer = modules.GrafanaAPIServer
 	// BackgroundServices is the module name for all background services.
 	// Individual background services are registered as dependencies of this module.
 	BackgroundServices = "background-services"
-
-	// Core is the core module that includes critical services like the API server.
+	// Core is the core module that includes critical services like the API server and tracing.
 	Core = "core"
-
 	// All is the top-level module that depends on both core and background services.
 	// This module represents the complete system startup.
 	All = "all"
@@ -17,7 +22,8 @@ const (
 
 // dependencyMap returns the module dependency relationships for the background service system.
 // It defines the startup order and dependencies between different module groups:
-//   - GrafanaAPIServer has no dependencies (starts first)
+//   - Tracing has no dependencies (starts first)
+//   - GrafanaAPIServer has Tracing as a dependency (starts second)
 //   - Core depends on GrafanaAPIServer
 //   - BackgroundServices has no explicit dependencies (populated dynamically)
 //   - All depends on both Core and BackgroundServices (starts last)
@@ -26,9 +32,10 @@ const (
 // unless they are explicitly listed in this map with custom dependencies.
 func dependencyMap() map[string][]string {
 	return map[string][]string{
-		modules.GrafanaAPIServer: {},
-		Core:                     {modules.GrafanaAPIServer},
-		BackgroundServices:       {},
-		All:                      {Core, BackgroundServices},
+		Tracing:            {},
+		GrafanaAPIServer:   {Tracing},
+		Core:               {GrafanaAPIServer},
+		BackgroundServices: {},
+		All:                {Core, BackgroundServices},
 	}
 }
