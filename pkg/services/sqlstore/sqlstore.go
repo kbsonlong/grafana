@@ -128,6 +128,7 @@ func newStore(cfg *setting.Cfg, engine *xorm.Engine, features featuremgmt.Featur
 // Has to be done in a second phase (after initialization), since other services can register migrations during
 // the initialization phase.
 func (ss *SQLStore) Migrate(isDatabaseLockingEnabled bool) error {
+	ss.log.Debug("skip_migrations", "value", ss.dbCfg.SkipMigrations)
 	if ss.dbCfg.SkipMigrations || ss.migrations == nil {
 		return nil
 	}
