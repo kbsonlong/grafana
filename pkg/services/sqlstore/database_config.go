@@ -65,6 +65,11 @@ func NewDatabaseConfig(cfg *setting.Cfg, features featuremgmt.FeatureToggles) (*
 	return dbCfg, nil
 }
 
+// ProvideDatabaseConfig provides DatabaseConfig for wire injection
+func ProvideDatabaseConfig(cfg *setting.Cfg, features featuremgmt.FeatureToggles) (*DatabaseConfig, error) {
+	return NewDatabaseConfig(cfg, features)
+}
+
 func (dbCfg *DatabaseConfig) readConfig(cfg *setting.Cfg) error {
 	sec := cfg.Raw.Section("database")
 

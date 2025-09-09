@@ -3,6 +3,7 @@ package migrations
 import (
 	dashboardFolderMigrations "github.com/grafana/grafana/pkg/services/dashboards/database/migrations"
 	"github.com/grafana/grafana/pkg/services/featuremgmt"
+	"github.com/grafana/grafana/pkg/services/sqlstore"
 	"github.com/grafana/grafana/pkg/services/sqlstore/migrations/accesscontrol"
 	"github.com/grafana/grafana/pkg/services/sqlstore/migrations/anonservice"
 	"github.com/grafana/grafana/pkg/services/sqlstore/migrations/externalsession"
@@ -10,6 +11,7 @@ import (
 	"github.com/grafana/grafana/pkg/services/sqlstore/migrations/ssosettings"
 	"github.com/grafana/grafana/pkg/services/sqlstore/migrations/ualert"
 	. "github.com/grafana/grafana/pkg/services/sqlstore/migrator"
+	"github.com/grafana/grafana/pkg/infra/log"
 )
 
 // --- Migration Guide line ---
@@ -22,13 +24,20 @@ import (
 
 type OSSMigrations struct {
 	features featuremgmt.FeatureToggles
+	dbCfg    *sqlstore.DatabaseConfig
 }
 
-func ProvideOSSMigrations(features featuremgmt.FeatureToggles) *OSSMigrations {
-	return &OSSMigrations{features}
+func ProvideOSSMigrations(features featuremgmt.FeatureToggles, dbCfg *sqlstore.DatabaseConfig) *OSSMigrations {
+	return &OSSMigrations{features: features, dbCfg: dbCfg}
 }
 
 func (oss *OSSMigrations) AddMigration(mg *Migrator) {
+	// Check skip_migrations parameter
+	if oss.dbCfg != nil && oss.dbCfg.SkipMigrations {
+		log.New("migrations").Debug("Skipping OSS migrations due to skip_migrations=true")
+		return
+	}
+
 	mg.AddCreateMigration()
 	addUserMigrations(mg)
 	addTempUserMigrations(mg)

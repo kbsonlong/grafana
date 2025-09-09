@@ -1,0 +1,71 @@
+diff --git a/pkg/server/wireexts_oss.go b/pkg/server/wireexts_oss.go
+index 77ff00b9..518f3580 100644
+--- a/pkg/server/wireexts_oss.go
++++ b/pkg/server/wireexts_oss.go
+@@ -80,6 +80,7 @@ var wireExtsBasicSet = wire.NewSet(
+ 	wire.Bind(new(provisioning.ProvisioningService), new(*provisioning.ProvisioningServiceImpl)),
+ 	backgroundsvcs.ProvideBackgroundServiceRegistry,
+ 	wire.Bind(new(registry.BackgroundServiceRegistry), new(*backgroundsvcs.BackgroundServiceRegistry)),
++	sqlstore.ProvideDatabaseConfig,
+ 	migrations.ProvideOSSMigrations,
+ 	wire.Bind(new(registry.DatabaseMigrator), new(*migrations.OSSMigrations)),
+ 	authinfoimpl.ProvideOSSUserProtectionService,
+diff --git a/pkg/services/sqlstore/database_config.go b/pkg/services/sqlstore/database_config.go
+index e3cc6260..97fa0f88 100644
+--- a/pkg/services/sqlstore/database_config.go
++++ b/pkg/services/sqlstore/database_config.go
+@@ -65,6 +65,11 @@ func NewDatabaseConfig(cfg *setting.Cfg, features featuremgmt.FeatureToggles) (*
+ 	return dbCfg, nil
+ }
+ 
++// ProvideDatabaseConfig provides DatabaseConfig for wire injection
++func ProvideDatabaseConfig(cfg *setting.Cfg, features featuremgmt.FeatureToggles) (*DatabaseConfig, error) {
++	return NewDatabaseConfig(cfg, features)
++}
++
+ func (dbCfg *DatabaseConfig) readConfig(cfg *setting.Cfg) error {
+ 	sec := cfg.Raw.Section("database")
+ 
+diff --git a/pkg/services/sqlstore/migrations/migrations.go b/pkg/services/sqlstore/migrations/migrations.go
+index 99ccb2e4..21ad08a1 100644
+--- a/pkg/services/sqlstore/migrations/migrations.go
++++ b/pkg/services/sqlstore/migrations/migrations.go
+@@ -3,6 +3,7 @@ package migrations
+ import (
+ 	dashboardFolderMigrations "github.com/grafana/grafana/pkg/services/dashboards/database/migrations"
+ 	"github.com/grafana/grafana/pkg/services/featuremgmt"
++	"github.com/grafana/grafana/pkg/services/sqlstore"
+ 	"github.com/grafana/grafana/pkg/services/sqlstore/migrations/accesscontrol"
+ 	"github.com/grafana/grafana/pkg/services/sqlstore/migrations/anonservice"
+ 	"github.com/grafana/grafana/pkg/services/sqlstore/migrations/externalsession"
+@@ -10,6 +11,7 @@ import (
+ 	"github.com/grafana/grafana/pkg/services/sqlstore/migrations/ssosettings"
+ 	"github.com/grafana/grafana/pkg/services/sqlstore/migrations/ualert"
+ 	. "github.com/grafana/grafana/pkg/services/sqlstore/migrator"
++	"github.com/grafana/grafana/pkg/infra/log"
+ )
+ 
+ // --- Migration Guide line ---
+@@ -22,13 +24,20 @@ import (
+ 
+ type OSSMigrations struct {
+ 	features featuremgmt.FeatureToggles
++	dbCfg    *sqlstore.DatabaseConfig
+ }
+ 
+-func ProvideOSSMigrations(features featuremgmt.FeatureToggles) *OSSMigrations {
+-	return &OSSMigrations{features}
++func ProvideOSSMigrations(features featuremgmt.FeatureToggles, dbCfg *sqlstore.DatabaseConfig) *OSSMigrations {
++	return &OSSMigrations{features: features, dbCfg: dbCfg}
+ }
+ 
+ func (oss *OSSMigrations) AddMigration(mg *Migrator) {
++	// Check skip_migrations parameter
++	if oss.dbCfg != nil && oss.dbCfg.SkipMigrations {
++		log.New("migrations").Debug("Skipping OSS migrations due to skip_migrations=true")
++		return
++	}
++
+ 	mg.AddCreateMigration()
+ 	addUserMigrations(mg)
+ 	addTempUserMigrations(mg)
