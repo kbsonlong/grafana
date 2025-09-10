@@ -10,12 +10,17 @@ import (
 )
 
 func MigrateResourceStore(ctx context.Context, engine *xorm.Engine, cfg *setting.Cfg) error {
+	// Check skip_migrations parameter
+	sec := cfg.Raw.Section("database")
+	if sec.Key("skip_migrations").MustBool(false) {
+		return nil
+	}
+
 	mg := migrator.NewScopedMigrator(engine, cfg, "resource")
 	mg.AddCreateMigration()
 
 	initResourceTables(mg)
 
-	sec := cfg.Raw.Section("database")
 	return mg.RunMigrations(
 		ctx,
 		sec.Key("migration_locking").MustBool(true),

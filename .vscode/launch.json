@@ -7,7 +7,9 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/pkg/cmd/grafana/",
-      "env": {},
+      "env": {
+        "GOPATH": "/Users/zengshenglong/.gvm/gos/go1.24/bin/go",
+      },
       "cwd": "${workspaceFolder}",
       "args": ["server", "--homepath", "${workspaceFolder}", "--packaging", "dev", "cfg:app_mode=development"]
     },
